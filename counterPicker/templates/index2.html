@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dota Hero Advantage</title>
+    <style>
+        body {
+            background-image: url('https://www.reddit.com/media?url=https%3A%2F%2Fexternal-preview.redd.it%2FfWfA2cgrhMSxO7PTn9-0Hez4gbynQB_KfcwuC92KfsU.jpg');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-attachment: fixed;
+            color: rgb(0, 0, 3);
+        }
+        .positive {
+            color: green;
+        }
+        .negative {
+            color: red;
+        }
+        .results {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Enter Up to 5 Hero Names</h1>
+    <form action="/" method="post">
+        <input type="text" name="heroes" placeholder="Hero 1" required>
+        <input type="text" name="heroes" placeholder="Hero 2">
+        <input type="text" name="heroes" placeholder="Hero 3">
+        <input type="text" name="heroes" placeholder="Hero 4">
+        <input type="text" name="heroes" placeholder="Hero 5">
+        <button type="submit">Submit</button>
+    </form>
+
+    {% if sorted_advantages %}
+    <div class="results">
+        <h2>Aggregated Advantage Percentages</h2>
+        <ul>
+            {% for hero, avg in sorted_advantages %}
+                <li>
+                    {% if hero in hero_images %}
+                        <img src="{{ hero_images[hero] }}" alt="{{ hero_name_mapping[hero] }}" width="50" height="50">
+                        <br>
+                        <small>Image URL: {{ hero_images[hero] }}</small>
+                    {% endif %}
+                    {{ hero_name_mapping[hero] }}: 
+                    <span class="{% if avg > 0 %}positive{% else %}negative{% endif %}">
+                        {{ avg | round(2) }}%
+                    </span>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+</body>
+</html>

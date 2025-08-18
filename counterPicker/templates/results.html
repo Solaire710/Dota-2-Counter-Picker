@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Results</title>
+    <style>
+        body {
+            background-image: url('https://www.reddit.com/media?url=https%3A%2F%2Fexternal-preview.redd.it%2FfWfA2cgrhMSxO7PTn9-0Hez4gbynQB_KfcwuC92KfsU.jpg'); /* Replace with your image URL */
+            background-size: cover; /* Cover the entire screen */
+            background-repeat: no-repeat; /* Prevent repeating the image */
+            background-position: center; /* Centers the image */
+            background-attachment: fixed; /* Keep the background fixed while scrolling */
+            color: rgb(0, 0, 3); /* Change text color for better contrast */
+        }
+        .positive {
+            color: green;
+        }
+        .negative {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>Aggregated Advantage Percentages</h1>
+    <ul>
+        {% for hero, avg in sorted_advantages %}
+            <li>
+                {% if hero in hero_images %}
+                    <img src="{{ hero_images[hero] }}" alt="{{ hero_name_mapping[hero] }}" width="50" height="50">
+                {% endif %}
+                {{ hero_name_mapping[hero] }}: 
+                <span class="{% if avg > 0 %}positive{% else %}negative{% endif %}">
+                    {{ avg | round(2) }}%
+                </span>
+            </li>
+        {% endfor %}
+    </ul>
+    <a href="/">Go Back</a>
+</body>
+</html>
