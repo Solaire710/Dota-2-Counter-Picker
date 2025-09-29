@@ -3,57 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dota Hero Advantage</title>
-    <style>
-        body {
-            background-image: url('https://www.reddit.com/media?url=https%3A%2F%2Fexternal-preview.redd.it%2FfWfA2cgrhMSxO7PTn9-0Hez4gbynQB_KfcwuC92KfsU.jpg');
-            background-size: cover;
-            background-repeat: no-repeat;
-            background-position: center;
-            background-attachment: fixed;
-            color: rgb(0, 0, 3);
-        }
-        .positive {
-            color: green;
-        }
-        .negative {
-            color: red;
-        }
-        .results {
-            margin-top: 20px;
-        }
-    </style>
+    <title>Dota 2 Counter Picker</title>
 </head>
 <body>
-    <h1>Enter Up to 5 Hero Names</h1>
-    <form action="/" method="post">
-        <input type="text" name="heroes" placeholder="Hero 1" required>
-        <input type="text" name="heroes" placeholder="Hero 2">
-        <input type="text" name="heroes" placeholder="Hero 3">
-        <input type="text" name="heroes" placeholder="Hero 4">
-        <input type="text" name="heroes" placeholder="Hero 5">
-        <button type="submit">Submit</button>
-    </form>
-
-    {% if sorted_advantages %}
-    <div class="results">
-        <h2>Aggregated Advantage Percentages</h2>
+    <h1>Dota 2 Counter Picker</h1>
+    
+    <!-- Hero Select Form -->
+    <form method="POST">
+      <label for="hero_name">Select a Hero:</label>
+      <select name="hero_name" id="hero_name" required>
+          <option value="" disabled selected>Select your hero</option>
+          {% for id, name in hero_names.items() %}
+              <option value="{{ name }}" {% if hero_name == name %}selected{% endif %}>{{ name }}</option>
+          {% endfor %}
+      </select>
+      <button type="submit">Get Worst Matchups</button>
+  </form>
+    <!-- Display Results if Hero is Selected -->
+    {% if matchups %}
+        <h2>Top 5 Worst Matchups for {{ hero_name }}</h2>
         <ul>
-            {% for hero, avg in sorted_advantages %}
-                <li>
-                    {% if hero in hero_images %}
-                        <img src="{{ hero_images[hero] }}" alt="{{ hero_name_mapping[hero] }}" width="50" height="50">
-                        <br>
-                        <small>Image URL: {{ hero_images[hero] }}</small>
-                    {% endif %}
-                    {{ hero_name_mapping[hero] }}: 
-                    <span class="{% if avg > 0 %}positive{% else %}negative{% endif %}">
-                        {{ avg | round(2) }}%
-                    </span>
-                </li>
-            {% endfor %}
+            <!-- In your Jinja template -->
+    {% for matchup in matchups %}
+        <div>
+            <p>{{ hero_names[matchup.heroId2] }}:</p>
+            <p>Match Count: {{ matchup.matchCount }}</p>
+            <p>Wins: {{ matchup.winCount }}</p>
+            <p>Win Rate (Hero 2 vs Hero 1): {{ '{:.2f}'.format((matchup.winCount / matchup.matchCount) * 100) }}%</p> <!-- Calculate win rate manually -->
+        </div>
+    {% endfor %}
+
         </ul>
-    </div>
+    {% endif %}
+
+    <!-- Display Error Message if Hero Not Found -->
+    {% if error %}
+        <p style="color:red">{{ error }}</p>
     {% endif %}
 </body>
 </html>

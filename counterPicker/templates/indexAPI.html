@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dota 2 Counter Picker</title>
+</head>
+<body>
+  <h1>Dota 2 Counter Picker</h1>
+  <form id="heroForm">
+    <input type="text" name="hero1" placeholder="Hero 1">
+    <input type="text" name="hero2" placeholder="Hero 2">
+    <input type="text" name="hero3" placeholder="Hero 3">
+    <input type="text" name="hero4" placeholder="Hero 4">
+    <input type="text" name="hero5" placeholder="Hero 5">
+    <button type="submit">Get Counters</button>
+  </form>
+
+  <div id="results"></div>
+
+  <script src="{{ url_for('static', filename='scriptAPI.js') }}"></script>
+</body>
+</html>

@@ -1,242 +1,112 @@
-from flask import Flask, render_template, request
-import time
 import requests
-from bs4 import BeautifulSoup
+from flask import Flask, render_template, request, jsonify
+import cloudscraper
 
 app = Flask(__name__)
 
-# Define the base URL
-base_url = 'https://www.dotabuff.com/heroes/'
-hero_name_mapping = {
-    "abaddon": "Abaddon",
-    "alchemist": "Alchemist",
-    "ancient_apparition": "Ancient Apparition",
-    "anti-mage": "Anti-Mage",
-    "arc_warden": "Arc Warden",
-    "axe": "Axe",
-    "bane": "Bane",
-    "batrider": "Batrider",
-    "beastmaster": "Beastmaster",
-    "bloodseeker": "Bloodseeker",
-    "bounty_hunter": "Bounty Hunter",
-    "brewmaster": "Brewmaster",
-    "bristleback": "Bristleback",
-    "broodmother": "Broodmother",
-    "centaur_warrunner": "Centaur Warrunner",
-    "chaos_knight": "Chaos Knight",
-    "chen": "Chen",
-    "clinkz": "Clinkz",
-    "clockwerk": "Clockwerk",
-    "crystal_maiden": "Crystal Maiden",
-    "dawnbreaker": "Dawnbreaker",
-    "dark_seer": "Dark Seer",
-    "dark_willow": "Dark Willow",
-    "dazzle": "Dazzle",
-    "death_prophet": "Death Prophet",
-    "disruptor": "Disruptor",
-    "doom": "Doom",
-    "dragon_knight": "Dragon Knight",
-    "drow_ranger": "Drow Ranger",
-    "earth_spirit": "Earth Spirit",
-    "earthshaker": "Earthshaker",
-    "elder_titan": "Elder Titan",
-    "ember_spirit": "Ember Spirit",
-    "enchantress": "Enchantress",
-    "enigma": "Enigma",
-    "faceless_void": "Faceless Void",
-    "grimstroke": "Grimstroke",
-    "gyrocopter": "Gyrocopter",
-    "hoodwink": "Hoodwink",
-    "huskar": "Huskar",
-    "invoker": "Invoker",
-    "io": "Io",
-    "jakiro": "Jakiro",
-    "juggernaut": "Juggernaut",
-    "keeper_of_the_light": "Keeper of the Light",
-    "kunkka": "Kunkka",
-    "leshrac": "Leshrac",
-    "legion_commander": "Legion Commander",
-    "lich": "Lich",
-    "lifestealer": "Lifestealer",
-    "lina": "Lina",
-    "lion": "Lion",
-    "luna": "Luna",
-    "lycan": "Lycan",
-    "magnataur": "Magnus",
-    "marci": "Marci",
-    "mars": "Mars",
-    "medusa": "Medusa",
-    "meepo": "Meepo",
-    "mirana": "Mirana",
-    "monkey_king": "Monkey King",
-    "morphling": "Morphling",
-    "naga_siren": "Naga Siren",
-    "furion": "Nature's Prophet",
-    "necrolyte": "Necrophos",
-    "night_stalker": "Night Stalker",
-    "obsidian_destroyer": "Outworld Destroyer",
-    "ogre_magi": "Ogre Magi",
-    "omniknight": "Omniknight",
-    "oracle": "Oracle",
-    "obsidian_destroyer": "Outworld Destroyer",
-    "pangolier": "Pangolier",
-    "phantom_assassin": "Phantom Assassin",
-    "phantom_lancer": "Phantom Lancer",
-    "phoenix": "Phoenix",
-    "primal_beast": "Primal Beast",
-    "puck": "Puck",
-    "pudge": "Pudge",
-    "pugna": "Pugna",
-    "razor": "Razor",
-    "riki": "Riki",
-    "ringmaster": "Ringmaster",
-    "rubick": "Rubick",
-    "sand_king": "Sand King",
-    "shadow_demon": "Shadow Demon",
-    "nevermore": "Shadow Fiend",
-    "shadow_shaman": "Shadow Shaman",
-    "silencer": "Silencer",
-    "skywrath_mage": "Skywrath Mage",
-    "slardar": "Slardar",
-    "slark": "Slark",
-    "snapfire": "Snapfire",
-    "sniper": "Sniper",
-    "spectre": "Spectre",
-    "spirit_breaker": "Spirit Breaker",
-    "storm_spirit": "Storm Spirit",
-    "sven": "Sven",
-    "techies": "Techies",
-    "templar_assassin": "Templar Assassin",
-    "terrorblade": "Terrorblade",
-    "tidehunter": "Tidehunter",
-    "shredder": "Timbersaw",
-    "tinker": "Tinker",
-    "tiny": "Tiny",
-    "treant_protector": "Treant Protector",
-    "troll_warlord": "Troll Warlord",
-    "tusk": "Tusk",
-    "abyssal_underlord": "Underlord",
-    "undying": "Undying",
-    "ursa": "Ursa",
-    "vengeful_spirit": "Vengeful Spirit",
-    "venomancer": "Venomancer",
-    "viper": "Viper",
-    "visage": "Visage",
-    "void_spirit": "Void Spirit",
-    "warlock": "Warlock",
-    "weaver": "Weaver",
-    "windrunner": "Windrunner",
-    "winter_wyvern": "Winter Wyvern",
-    "witch_doctor": "Witch Doctor",
-    "wraith_king": "Wraith King",
-    "zeus": "Zeus",
-    "muerta": "Muerta"
+BEARER = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJTdWJqZWN0IjoiNzg0YTZhY2YtY2U1MC00NWUwLTliYzktYTZiOGNjNTIxYjM2IiwiU3RlYW1JZCI6IjEyNzc1OTM2NCIsIkFQSVVzZXIiOiJ0cnVlIiwibmJmIjoxNzU4Njc5MTcxLCJleHAiOjE3OTAyMTUxNzEsImlhdCI6MTc1ODY3OTE3MSwiaXNzIjoiaHR0cHM6Ly9hcGkuc3RyYXR6LmNvbSJ9.O-dkBVYLmg8lwKvE8yxUb_CpCErlfmtKdERaLA3DT-A"
+STRATZ_URL = "https://api.stratz.com/graphql"
+HEADERS = {
+    "Authorization": f"Bearer {BEARER}",
+    "Content-Type": "application/json",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+    "Origin": "https://stratz.com",
+    "Referer": "https://stratz.com/",
+    "Accept": "application/json",
 }
 
-base_hero_url = 'https://cdn.akamai.steamstatic.com/apps/dota2/images/dota_react/heroes/{}.png'
-hero_images = {
-    hero: base_hero_url.format(hero) for hero in hero_name_mapping
-}
+scraper = cloudscraper.create_scraper()
+scraper.headers.update({k: v for k, v in HEADERS.items() if v})
 
-# Function to fetch and parse win rates
-def fetch_win_rates(url):
-    max_retries = 5
-    retry_count = 0
-    advantage_percentages = {}
-
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36'
+def get_hero_name_map():
+    query = """
+    {
+      constants {
+        heroes {
+          id
+          displayName
+        }
+      }
     }
+    """
+    try:
+        resp = scraper.post(STRATZ_URL, json={"query": query})
+        resp.raise_for_status()
+        data = resp.json()
+        
+        # Debugging: print API response
+        print("API Response Data:", data)
 
-    while retry_count < max_retries:
-        print(f"Fetching URL: {url}")  # Debugging statement
-        response = requests.get(url, headers=headers)
-        print(f"Received response: {response.status_code}")  # Debugging statement
+        heroes = data["data"]["constants"]["heroes"]
 
-        if response.status_code == 200:
-            website_code = response.text
-            soup = BeautifulSoup(website_code, 'html.parser')
-            win_rate_table = soup.find('table', class_='sortable')
+        if not heroes:
+            print("No heroes found in response")
+        
+        # Sorting heroes by displayName alphabetically
+        sorted_heroes = sorted(heroes, key=lambda hero: hero["displayName"])
 
-            if win_rate_table:
-                rows = win_rate_table.find('tbody').find_all('tr')
-                for row in rows:
-                    cells = row.find_all('td')
-                    if len(cells) >= 2:
-                        hero_name_td = cells[0]
-                        hero_name = hero_name_td.get('data-value') or hero_name_td.text.strip()
-                        win_rate_td = cells[2]
-                        data_value = win_rate_td.get('data-value')
+        # Creating a dictionary of hero ID and name
+        return {hero["id"]: hero["displayName"] for hero in sorted_heroes}
 
-                        if data_value:
-                            advantage_percentages[hero_name] = float(data_value)
-                            print(f"Fetched {hero_name}: {data_value}%")  # Debugging statement
+    except requests.exceptions.RequestException as e:
+        print("Error fetching hero names:", e)
+        return {}
 
-                break
-            else:
-                print("Win rate table not found.")  # Debugging statement
-        elif response.status_code == 429:
-            wait_time = 2 ** retry_count
-            print(f"Too many requests. Waiting for {wait_time} seconds...")
-            time.sleep(wait_time)
-            retry_count += 1
-        else:
-            print(f"Failed to retrieve the website. Status code: {response.status_code}")
-            break
 
-    print("Advantage Percentages Fetched:", advantage_percentages)  # Debugging statement
-    return advantage_percentages
+def get_worst_matchups(hero_id):
+    query = f"""
+    {{
+      heroStats {{
+        matchUp(heroId: {hero_id}, matchLimit: 5, orderBy: 4) {{
+          heroId
+          matchCountVs
+          vs {{
+            heroId2
+            matchCount
+            winCount
+            winRateHeroId1
+            winRateHeroId2
+          }}
+        }}
+      }}
+    }}
+    """
+    resp = scraper.post(STRATZ_URL, json={"query": query})
+    resp.raise_for_status()
+    data = resp.json()
 
-@app.route('/', methods=['GET', 'POST'])
+    # Print the raw response to check the win rates
+    print("Raw API Response:")
+    print(data)
+
+    matchups = data["data"]["heroStats"]["matchUp"][0]["vs"]
+
+    return matchups
+
+@app.route("/", methods=["GET", "POST"])
 def index():
-    if request.method == 'POST':
-        # Get all hero names
-        hero_names = request.form.getlist('heroes')  # This will get all hero names
+    error = None
+    matchups = None
+    hero_names = get_hero_name_map()
 
-        # Now use hero_name_mapping to display the new names
-        new_names = [hero_name_mapping[hero] for hero in hero_names if hero in hero_name_mapping]
+    print("Hero Names:", hero_names)  # Check that hero names are properly passed
 
-        # Filter out empty inputs
-        hero_names = [name.strip() for name in hero_names if name.strip()]
+    hero_name = None  # Default to None, in case no form is submitted
 
-        # Normalize hero names for comparison
-        normalized_hero_names = [name.replace(" ", "_").lower() for name in hero_names]
+    if request.method == "POST":
+        hero_name = request.form.get("hero_name")
+        if not hero_name:
+            error = "Please select a hero!"
+        else:
+            hero_id = next((hero_id for hero_id, name in hero_names.items() if name == hero_name), None)
+            if hero_id:
+                matchups = get_worst_matchups(hero_id)
+            else:
+                error = "Hero not found!"
 
-        print("Input Heroes (Normalized):", normalized_hero_names)  # Debugging statement
+    return render_template("index.html", hero_names=hero_names, matchups=matchups, error=error, hero_name=hero_name)
 
-        # Create URLs for each hero
-        urlList = [base_url + name.replace(" ", "_").lower() + '/counters' for name in hero_names]
 
-        print("Generated URLs:", urlList)  # Debugging statement
 
-        # Dictionary to store total advantages for each hero
-        all_hero_advantages = {}
-
-        # Loop through each URL in urlList and fetch win rates
-        for url in urlList:
-            advantages = fetch_win_rates(url)
-            for hero, advantage in advantages.items():
-                if hero not in all_hero_advantages:
-                    all_hero_advantages[hero] = []
-                all_hero_advantages[hero].append(advantage)
-
-        print("Aggregated Advantages:", all_hero_advantages)  # Print raw advantages
-
-        # Calculate average advantage percentages
-        average_advantages = {hero: sum(adv) / len(adv) for hero, adv in all_hero_advantages.items()}
-
-        # Normalize the keys in average_advantages for comparison
-        normalized_average_advantages = {hero.replace(" ", "_").lower(): avg for hero, avg in average_advantages.items()}
-
-        # Exclude input heroes from the sorted advantages
-        filtered_advantages = {hero: avg for hero, avg in normalized_average_advantages.items() if hero not in normalized_hero_names}
-
-        # Sort the filtered advantages
-        sorted_advantages = sorted(filtered_advantages.items(), key=lambda x: x[1], reverse=True)
-
-        return render_template('results.html', sorted_advantages=sorted_advantages, hero_images=hero_images, hero_name_mapping=hero_name_mapping)
-
-    return render_template('index.html')
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(debug=True)
