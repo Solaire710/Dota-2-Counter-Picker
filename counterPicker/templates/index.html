@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+<link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -45,41 +46,58 @@
     </script>
 </head>
 <body>
+  <div class="page-container">
+    <a href="/" class="reset-button">Reset</a>
     <h1>Dota 2 Counter Picker</h1>
-    
-    <!-- Hero Select Form -->
-    <form method="POST">
-        <label>Select up to 5 Enemy Heroes:</label><br><br>
 
+    <form method="POST">
+      <div class="hero-select-container">
         {% for i in range(1, 6) %}
-        <label for="hero_{{ i }}">Hero {{ i }}:</label>
-        <input type="text" list="hero-list-{{ i }}" name="hero_{{ i }}" id="hero_{{ i }}" autocomplete="off" placeholder="Type to search...">
-        
-        <datalist id="hero-list-{{ i }}">
+        <div class="hero-select-box">
+          <label for="hero_{{ i }}">Hero {{ i }}:</label>
+          <input type="text" list="hero-list-{{ i }}" name="hero_{{ i }}" id="hero_{{ i }}"
+                value="{{ selected_heroes[i-1] if selected_heroes|length >= i else '' }}"
+                autocomplete="off" placeholder="Type to search...">
+
+          <datalist id="hero-list-{{ i }}">
             {% for id, name in hero_names.items() %}
             <option value="{{ name }}"></option>
             {% endfor %}
-        </datalist>
-        <br><br>
-        {% endfor %}
+          </datalist>
 
-        <button type="submit">Calculate Best Picks</button>
+          {% if selected_heroes|length >= i and selected_heroes[i-1] in hero_short_names %}
+            <img src="https://cdn.stratz.com/images/dota2/heroes/{{ hero_short_names[selected_heroes[i-1]] }}_vert.png"
+                alt="{{ selected_heroes[i-1] }}">
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+
+      <button type="submit">Calculate Best Picks</button>
     </form>
 
-
-    <!-- Display Results if Hero is Selected -->
     {% if matchups %}
     <h2>Best Counters Against: {{ ", ".join(selected_heroes) }}</h2>
     <ul>
-        {% for hero, score in matchups %}
-        <li>{{ hero }} — Advantage Score: {{ "%+.2f"|format(-score) }}</li>
-        {% endfor %}
+      {% for hero, score in matchups %}
+          <li>{{ hero }} — Advantage Score: {{ "%+.2f"|format(-score) }}</li>
+      {% endfor %}
     </ul>
     {% endif %}
 
-    <!-- Display Error Message if Hero Not Found -->
     {% if error %}
-        <p style="color:red">{{ error }}</p>
+    <p style="color:red">{{ error }}</p>
     {% endif %}
+
+    <h2>All Heroes</h2>
+    <div class="hero-grid">
+      {% for id, name in hero_names.items() %}
+      <div class="hero-grid-item" title="{{ name }}">
+        <img src="https://cdn.stratz.com/images/dota2/heroes/{{ hero_short_names[name] }}_vert.png" alt="{{ name }}" />
+      </div>
+      {% endfor %}
+    </div>
+
+  </div>
 </body>
 </html>

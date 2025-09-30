@@ -25,6 +25,7 @@ def get_hero_name_map():
         heroes {
           id
           displayName
+          shortName
         }
       }
     }
@@ -34,18 +35,23 @@ def get_hero_name_map():
         resp.raise_for_status()
         data = resp.json()
 
-        print("API Response Data:", data)  # Debug
-
         heroes = data["data"]["constants"]["heroes"]
         if not heroes:
             print("No heroes found in response")
 
+        # sort by displayName for dropdown order
         sorted_heroes = sorted(heroes, key=lambda hero: hero["displayName"])
-        return {hero["id"]: hero["displayName"] for hero in sorted_heroes}
+        
+        # Create two mappings
+        id_to_name = {hero["id"]: hero["displayName"] for hero in sorted_heroes}
+        name_to_short = {hero["displayName"]: hero["shortName"] for hero in sorted_heroes}
+
+        return id_to_name, name_to_short
 
     except requests.exceptions.RequestException as e:
         print("Error fetching hero names:", e)
-        return {}
+        return {}, {}
+
 
 def get_best_counters_by_synergy(hero_ids, hero_names, match_limit=50):
     hero_stats = {}
@@ -107,12 +113,12 @@ def get_best_counters_by_synergy(hero_ids, hero_names, match_limit=50):
         results.append((cid, avg_synergy))
 
     results.sort(key=lambda x: x[1])  # ascending = worst synergy
-    return [(hero_names.get(cid, f"Unknown({cid})"), round(synergy, 2)) for cid, synergy in results[:10]]
+    return [(hero_names.get(cid, f"Unknown({cid})"), round(synergy, 2)) for cid, synergy in results]
 
 @app.route("/", methods=["GET", "POST"])
 def index():
     error = None
-    hero_names = get_hero_name_map()
+    hero_names, hero_short_names = get_hero_name_map()
     selected_heroes = []
     matchups = []
 
@@ -122,24 +128,21 @@ def index():
             if hero_name:
                 selected_heroes.append(hero_name)
 
-        print("Selected heroes:", selected_heroes)
-
         if not selected_heroes:
             error = "Please select at least one hero!"
         else:
             selected_ids = [hid for hid, name in hero_names.items() if name in selected_heroes]
-            print("Selected IDs:", selected_ids)
-
             matchups = get_best_counters_by_synergy(selected_ids, hero_names)
-            print("Matchups:", matchups)
 
     return render_template(
         "index.html",
         hero_names=hero_names,
+        hero_short_names=hero_short_names,
         matchups=matchups,
         error=error,
         selected_heroes=selected_heroes,
     )
+
 
 if __name__ == "__main__":
     app.run(debug=True)

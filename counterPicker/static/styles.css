@@ -1,0 +1,89 @@
+ul {
+  list-style-type: none;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+/* Wrap the whole page content in a container */
+.page-container {
+  max-width: 98vw;          /* Almost full width, but not touching edge */
+  margin: 0 auto;
+  padding: 10px 10px;       /* Reduced side padding */
+  text-align: center;
+}
+
+/* Center and layout hero selects */
+.hero-select-container {
+  display: flex;
+  justify-content: center;  /* center horizontally */
+  gap: 20px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  margin-bottom: 40px;
+}
+
+/* Make each select box stack label + input + image vertically and centered */
+.hero-select-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Images under the selects */
+.hero-select-box img {
+  margin-top: 8px;
+  height: 150px;
+}
+
+/* Hero grid styling */
+.hero-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+  gap: 8px;
+  width: 100%;
+  padding: 0;
+  margin: 20px auto 40px auto;
+}
+
+/* Center grid items */
+.hero-grid-item {
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Smaller hero images */
+.hero-grid-item img {
+  width: 52px;
+  height: 78px;
+  object-fit: contain;
+  border: 1px solid transparent;
+  transition: border-color 0.3s ease;
+}
+
+.hero-grid-item:hover img {
+  border-color: #f39c12;
+}
+
+.reset-button {
+  position: absolute;
+  top: 15px;
+  left: 20px;
+  padding: 8px 14px;
+  background-color: #e74c3c;
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+  z-index: 999;
+}
+
+.reset-button:hover {
+  background-color: #c0392b;
+}
