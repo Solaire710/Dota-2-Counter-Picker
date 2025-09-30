@@ -5,7 +5,7 @@ import cloudscraper
 
 app = Flask(__name__)
 
-BEARER = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJTdWJqZWN0IjoiNzg0YTZhY2YtY2U1MC00NWUwLTliYzktYTZiOGNjNTIxYjM2IiwiU3RlYW1JZCI6IjEyNzc1OTM2NCIsIkFQSVVzZXIiOiJ0cnVlIiwibmJmIjoxNzU4Njc5MTcxLCJleHAiOjE3OTAyMTUxNzEsImlhdCI6MTc1ODY3OTE3MSwiaXNzIjoiaHR0cHM6Ly9hcGkuc3RyYXR6LmNvbSJ9.O-dkBVYLmg8lwKvE8yxUb_CpCErlfmtKdERaLA3DT-A"
+BEARER = os.getenv("STRATZ_BEARER_TOKEN", "default-token-if-any")
 STRATZ_URL = "https://api.stratz.com/graphql"
 HEADERS = {
     "Authorization": f"Bearer {BEARER}",
