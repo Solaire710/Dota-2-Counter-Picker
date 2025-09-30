@@ -113,7 +113,7 @@ def get_best_counters_by_synergy(hero_ids, hero_names, match_limit=50):
         results.append((cid, avg_synergy))
 
     results.sort(key=lambda x: x[1])  # ascending = worst synergy
-    return [(hero_names.get(cid, f"Unknown({cid})"), round(synergy, 2)) for cid, synergy in results[:10]]
+    return [(hero_names.get(cid, f"Unknown({cid})"), round(synergy, 2)) for cid, synergy in results]
 
 @app.route("/", methods=["GET", "POST"])
 def index():
