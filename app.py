@@ -5,7 +5,9 @@ import cloudscraper
 
 app = Flask(__name__)
 
-BEARER = os.getenv("STRATZ_BEARER_TOKEN", "default-token-if-any")
+BEARER = os.environ.get("STRATZ_BEARER_TOKEN")
+if not BEARER:
+    print("⚠️ WARNING: STRATZ_BEARER_TOKEN environment variable is NOT set!")
 STRATZ_URL = "https://api.stratz.com/graphql"
 HEADERS = {
     "Authorization": f"Bearer {BEARER}",
@@ -32,7 +34,7 @@ def get_hero_name_map():
     }
     """
     try:
-        resp = scraper.post(STRATZ_URL, json={"query": query})
+        resp = scraper.post(STRATZ_URL, json={"query": query}, timeout=10)  # Added timeout
         resp.raise_for_status()
         data = resp.json()
 
@@ -75,7 +77,7 @@ def get_best_counters_by_synergy(hero_ids, hero_names, match_limit=50):
         """
 
         try:
-            resp = scraper.post(STRATZ_URL, json={"query": query})
+            resp = scraper.post(STRATZ_URL, json={"query": query}, timeout=10)  # Added timeout
             resp.raise_for_status()
             data = resp.json()
 
@@ -147,4 +149,4 @@ def index():
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(debug=False, host="0.0.0.0", port=port)
