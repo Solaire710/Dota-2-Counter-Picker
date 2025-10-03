@@ -77,12 +77,14 @@
     </form>
 
     {% if matchups %}
-    <h2>Best Counters Against: {{ ", ".join(selected_heroes) }}</h2>
-    <ul>
-      {% for hero, score in matchups %}
-          <li>{{ hero }} — Advantage Score: {{ "%+.2f"|format(-score) }}</li>
-      {% endfor %}
-    </ul>
+    <div class="results-box">
+        <h2>Best Counters Against: {{ ", ".join(selected_heroes) }}</h2>
+        <ul>
+          {% for hero, score in matchups %}
+              <li>{{ hero }} — Advantage Score: {{ "%+.2f"|format(-score) }}</li>
+          {% endfor %}
+        </ul>
+    </div>
     {% endif %}
 
     {% if error %}

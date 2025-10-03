@@ -5,20 +5,23 @@ ul {
 body {
   margin: 0;
   padding: 0;
+  background-color: #333333; /* Dark charcoal gray background */
+  color: white; /* White text for contrast */
+  font-family: Arial, sans-serif;
 }
 
 /* Wrap the whole page content in a container */
 .page-container {
   max-width: 98vw;          /* Almost full width, but not touching edge */
   margin: 0 auto;
-  padding: 10px 10px;       /* Reduced side padding */
+  padding: 20px;            /* Added more padding for better spacing */
   text-align: center;
 }
 
 /* Center and layout hero selects */
 .hero-select-container {
   display: flex;
-  justify-content: center;  /* center horizontally */
+  justify-content: center;  /* Center horizontally */
   gap: 20px;
   flex-wrap: wrap;
   align-items: flex-start;
@@ -30,12 +33,18 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  background-color: #444444; /* Lighter gray background for the box */
+  padding: 20px;
+  border-radius: 8px;
+  width: 30%; /* Limit the width to 30% */
+  box-sizing: border-box;
 }
 
 /* Images under the selects */
 .hero-select-box img {
   margin-top: 8px;
   height: 150px;
+  border-radius: 5px;
 }
 
 /* Hero grid styling */
@@ -55,6 +64,9 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  background-color: #444444; /* Lighter gray box for each hero item */
+  padding: 10px;
+  border-radius: 8px;
 }
 
 /* Smaller hero images */
@@ -67,9 +79,19 @@ body {
 }
 
 .hero-grid-item:hover img {
-  border-color: #f39c12;
+  border-color: #f39c12; /* Golden border on hover */
 }
 
+/* Styling for result boxes (e.g., best counters) */
+.results-box {
+  background-color: #444444; /* Lighter gray box */
+  padding: 20px;
+  border-radius: 8px;
+  margin-top: 30px;
+  text-align: left;
+}
+
+/* Reset button */
 .reset-button {
   position: absolute;
   top: 15px;
@@ -86,4 +108,38 @@ body {
 
 .reset-button:hover {
   background-color: #c0392b;
+}
+
+/* Button styling */
+button {
+  padding: 10px 20px;
+  background-color: #007BFF;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 18px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+/* Search bar styling */
+.search-container input {
+  width: 100%;
+  padding: 10px;
+  background-color: #555555;
+  border: 1px solid #666666;
+  border-radius: 5px;
+  color: white;
+  margin-bottom: 20px;
+}
+
+/* Error message styling */
+p[style*="color:red"] {
+  color: red;
+  text-align: center;
+  font-weight: bold;
 }
