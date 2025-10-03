@@ -2,8 +2,16 @@ import os
 import requests
 from flask import Flask, render_template, request, jsonify
 import cloudscraper
+from pathlib import Path
 
 app = Flask(__name__)
+
+if Path(".env").exists():
+    from dotenv import load_dotenv
+    load_dotenv()
+    print("✅ Loaded .env for local development")
+else:
+    print("ℹ️ .env not found — using system environment variables")
 
 BEARER = os.environ.get("STRATZ_BEARER_TOKEN")
 if not BEARER:
