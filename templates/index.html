@@ -1,105 +1,194 @@
 <!DOCTYPE html>
 <html lang="en">
-<link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-<head>
+  <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dota 2 Counter Picker</title>
-    <style>
-        /* Styling the search input to be aligned with dropdown */
-        .search-container {
-            margin-bottom: 20px;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
     <script>
-        // Function to filter the dropdown options based on search input
-        function filterHeroes(searchText, selectElement) {
-            const options = selectElement.getElementsByTagName('option');
-            for (let option of options) {
-                if (option.text.toLowerCase().includes(searchText.toLowerCase())) {
-                    option.style.display = 'block';
-                } else {
-                    option.style.display = 'none';
-                }
-            }
+      let selectedHeroes = ['', '', '', '', ''];  // Array to hold selected heroes
+      let searchText = '';
+      let typingTimeout;
+
+      // Function to filter the grid based on search text
+      function filterHeroGrid(searchText) {
+        const gridItems = document.querySelectorAll('.hero-grid-item');
+        gridItems.forEach(item => {
+          const heroName = item.getAttribute('title').toLowerCase();
+          const heroImage = item.querySelector('img');
+
+          if (heroName.includes(searchText.toLowerCase())) {
+            heroImage.classList.remove('greyed-out');
+          } else {
+            heroImage.classList.add('greyed-out');
+          }
+        });
+        
+        // After typing, update the selected hero's portrait if it matches
+        const inputs = document.querySelectorAll('.hero-select-box input');
+        inputs.forEach((input, index) => {
+          const heroName = input.value.trim();
+          if (heroName && selectedHeroes[index] !== heroName) {
+            selectedHeroes[index] = heroName; // Update the selected hero
+            updateHeroImages(); // Update images
+          }
+        });
+      }
+
+      // Function to handle keyboard input globally
+      function handleKeyInput(event) {
+        if (/^[a-zA-Z]$/.test(event.key)) {
+          searchText += event.key; // Append the typed character
         }
-
-        // Event listener for search input to filter options
-        function createSearchInput(selectElement) {
-            const searchContainer = selectElement.parentNode.querySelector('.search-container');
-            if (!searchContainer) return;
-
-            const searchInput = document.createElement('input');
-            searchInput.type = 'text';
-            searchInput.placeholder = 'Search for heroes...';
-            searchInput.addEventListener('input', function () {
-                filterHeroes(searchInput.value, selectElement);
-            });
-            searchContainer.appendChild(searchInput);
+        
+        if (event.key === "Backspace") {
+          searchText = searchText.slice(0, -1);
         }
+        
+        // Update the display of the search text
+        updateSearchTextDisplay();
+        
+        // Filter the grid based on the current search text
+        filterHeroGrid(searchText);
 
-        // Wait for the DOM to load before creating search fields for each dropdown
-        window.onload = function () {
-            const selects = document.querySelectorAll('select');
-            selects.forEach(select => createSearchInput(select));
-        };
+        // Reset the timeout for clearing search text
+        clearTimeout(typingTimeout);
+        typingTimeout = setTimeout(clearSearchText, 3000); // Clear after 3 seconds of inactivity
+      }
+
+      // Function to display the typed text in a small overlay
+      function updateSearchTextDisplay() {
+        const searchDisplay = document.getElementById('search-text-display');
+        searchDisplay.textContent = `Searching for: ${searchText}`;
+        searchDisplay.style.display = 'block'; // Make sure it's visible
+      }
+
+      // Function to clear the search text after a delay
+      function clearSearchText() {
+        searchText = '';
+        filterHeroGrid(searchText); // Clear the grid
+        document.getElementById('search-text-display').style.display = 'none'; // Hide the display
+      }
+
+      // Function to handle clicking on a hero image to auto-fill the slots
+      function handleHeroImageClick(heroName) {
+        const emptySlotIndex = selectedHeroes.findIndex(hero => hero === '');
+        if (emptySlotIndex !== -1) {
+          selectedHeroes[emptySlotIndex] = heroName;
+          document.getElementById(`hero_${emptySlotIndex + 1}`).value = heroName;
+          updateHeroImages();
+        }
+      }
+
+      function updateHeroImages() {
+        const heroImageContainers = document.querySelectorAll('.hero-select-box .hero-image-container');
+
+        selectedHeroes.forEach((heroName, index) => {
+          const heroImageContainer = heroImageContainers[index];
+          const heroImage = heroImageContainer.querySelector('img');
+
+          // Get the short name for the hero from the mapping
+          const heroShortName = heroShortNames[heroName]; // Directly access from the mapping
+
+          if (heroName && heroShortName) {
+            const imageUrl = `https://cdn.stratz.com/images/dota2/heroes/${heroShortName}_vert.png`;
+            console.log(`Setting image for ${heroName}: ${imageUrl}`); // Debug the URL
+
+            // Update the image source dynamically
+            heroImage.src = imageUrl;
+
+            // Make sure the image container is visible
+            heroImageContainer.style.display = 'block'; // Ensure it's visible
+            heroImage.classList.add('visible'); // Make the image visible
+          } else {
+            // Hide the image container if no hero is selected
+            heroImageContainer.style.display = 'none';
+            heroImage.classList.remove('visible'); // Ensure it’s hidden
+          }
+        });
+      }
+
+      // Wait for the DOM to load and set up event listeners
+      window.onload = function () {
+        // Set event listener for keyboard input globally
+        document.addEventListener('keydown', handleKeyInput);
+
+        // Set up click handlers for hero images in the grid
+        const gridItems = document.querySelectorAll('.hero-grid-item');
+        gridItems.forEach(item => {
+          item.addEventListener('click', function () {
+            const heroName = item.getAttribute('title');
+            handleHeroImageClick(heroName);
+          });
+        });
+      };
     </script>
-</head>
-<body>
-  <div class="page-container">
-    <a href="/" class="reset-button">Reset</a>
-    <h1>Dota 2 Counter Picker</h1>
 
-    <form method="POST">
-      <div class="hero-select-container">
-        {% for i in range(1, 6) %}
-        <div class="hero-select-box">
-          <label for="hero_{{ i }}">Hero {{ i }}:</label>
-          <input type="text" list="hero-list-{{ i }}" name="hero_{{ i }}" id="hero_{{ i }}"
-                value="{{ selected_heroes[i-1] if selected_heroes|length >= i else '' }}"
-                autocomplete="off" placeholder="Type to search...">
+    <!-- Pass hero_short_names from Flask backend to JavaScript -->
+    <script>
+      const heroShortNames = {{ hero_short_names|tojson }};
+    </script>
+  </head>
 
-          <datalist id="hero-list-{{ i }}">
-            {% for id, name in hero_names.items() %}
-            <option value="{{ name }}"></option>
-            {% endfor %}
-          </datalist>
+  <body>
+    <div class="page-container">
+      <a href="/" class="reset-button">Reset</a>
+      <h1>Dota 2 Counter Picker</h1>
 
-          {% if selected_heroes|length >= i and selected_heroes[i-1] in hero_short_names %}
-            <img src="https://cdn.stratz.com/images/dota2/heroes/{{ hero_short_names[selected_heroes[i-1]] }}_vert.png"
-                alt="{{ selected_heroes[i-1] }}">
-          {% endif %}
+      <form method="POST">
+        <div class="hero-select-container">
+          {% for i in range(1, 6) %}
+          <div class="hero-select-box">
+            <label for="hero_{{ i }}">Hero {{ i }}:</label>
+            <input type="text" list="hero-list-{{ i }}" name="hero_{{ i }}" id="hero_{{ i }}"
+              value="{{ selected_heroes[i-1] if selected_heroes|length >= i else '' }}"
+              autocomplete="off" placeholder="Type to search...">
+
+            <datalist id="hero-list-{{ i }}">
+              {% for id, name in hero_names.items() %}
+              <option value="{{ name }}"></option>
+              {% endfor %}
+            </datalist>
+
+            <!-- Container for selected hero image -->
+            <div class="hero-image-container" id="hero-image-container-{{ i }}" style="display: none;">
+              <img src="" alt="Selected Hero Image" />
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <button type="submit">Calculate Best Picks</button>
+      </form>
+
+      {% if matchups %}
+      <div class="results-box">
+        <h2>Best Counters Against: {{ ", ".join(selected_heroes) }}</h2>
+        <ul>
+          {% for hero, score in matchups %}
+          <li>{{ hero }} — Advantage Score: {{ "%+.2f"|format(-score) }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+
+      {% if error %}
+      <p style="color:red">{{ error }}</p>
+      {% endif %}
+
+      <h2>All Heroes</h2>
+      <div class="hero-grid">
+        {% for id, name in hero_names.items() %}
+        <div class="hero-grid-item" title="{{ name }}">
+          <img src="https://cdn.stratz.com/images/dota2/heroes/{{ hero_short_names[name] }}_vert.png" alt="{{ name }}" />
         </div>
         {% endfor %}
       </div>
 
-      <button type="submit">Calculate Best Picks</button>
-    </form>
+      <!-- Display for search text -->
+      <div id="search-text-display" class="search-text-overlay"></div>
 
-    {% if matchups %}
-    <div class="results-box">
-        <h2>Best Counters Against: {{ ", ".join(selected_heroes) }}</h2>
-        <ul>
-          {% for hero, score in matchups %}
-              <li>{{ hero }} — Advantage Score: {{ "%+.2f"|format(-score) }}</li>
-          {% endfor %}
-        </ul>
     </div>
-    {% endif %}
-
-    {% if error %}
-    <p style="color:red">{{ error }}</p>
-    {% endif %}
-
-    <h2>All Heroes</h2>
-    <div class="hero-grid">
-      {% for id, name in hero_names.items() %}
-      <div class="hero-grid-item" title="{{ name }}">
-        <img src="https://cdn.stratz.com/images/dota2/heroes/{{ hero_short_names[name] }}_vert.png" alt="{{ name }}" />
-      </div>
-      {% endfor %}
-    </div>
-
-  </div>
-</body>
+  </body>
 </html>

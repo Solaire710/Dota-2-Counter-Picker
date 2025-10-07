@@ -1,7 +1,9 @@
+/* General reset for lists */
 ul {
   list-style-type: none;
 }
 
+/* Base body styling */
 body {
   margin: 0;
   padding: 0;
@@ -28,24 +30,24 @@ body {
   margin-bottom: 40px;
 }
 
-/* Make each select box stack label + input + image vertically and centered */
-.hero-select-box {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background-color: #444444; /* Lighter gray background for the box */
-  padding: 20px;
-  border-radius: 8px;
-  width: 30%; /* Limit the width to 30% */
-  box-sizing: border-box;
+/* Styling for the hero images under the search input */
+.hero-select-box img {
+  margin-top: 10px;
+  max-height: 150px;
+  width: auto;
+  border-radius: 5px;
+  visibility: hidden; /* Initially hidden */
+  opacity: 0; /* Make it fully transparent */
+  transition: visibility 0s, opacity 0.3s ease; /* Smooth opacity transition */
 }
 
-/* Images under the selects */
-.hero-select-box img {
-  margin-top: 8px;
-  height: 150px;
-  border-radius: 5px;
+/* When the image is displayed */
+.hero-select-box img.visible {
+  visibility: visible;
+  opacity: 1; /* Make it fully visible */
+  transition: opacity 0.3s ease; /* Smooth opacity transition */
 }
+
 
 /* Hero grid styling */
 .hero-grid {
@@ -78,6 +80,7 @@ body {
   transition: border-color 0.3s ease;
 }
 
+/* Hero image hover effect */
 .hero-grid-item:hover img {
   border-color: #f39c12; /* Golden border on hover */
 }
@@ -91,7 +94,7 @@ body {
   text-align: left;
 }
 
-/* Reset button */
+/* Reset button styling */
 .reset-button {
   position: absolute;
   top: 15px;
@@ -142,4 +145,53 @@ p[style*="color:red"] {
   color: red;
   text-align: center;
   font-weight: bold;
+}
+
+/* Grey out non-matching hero images with smooth transitions */
+.hero-grid-item img.greyed-out {
+  opacity: 0.3; /* Dimmed effect */
+  filter: grayscale(100%) blur(1px); /* Optional: grayscale and slight blur */
+  pointer-events: none; /* Optional: disables clicks on greyed-out images */
+  transition: opacity 0.3s ease, filter 0.3s ease; /* Smooth transition */
+}
+
+/* For smaller screens, make the hero grid more compact */
+@media (max-width: 768px) {
+  .hero-select-container {
+    flex-direction: column;
+  }
+  .hero-select-box {
+    width: 100%; /* Full width for select boxes on smaller screens */
+  }
+  .hero-grid {
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); /* Smaller grid items */
+  }
+}
+
+/* Styling the search display text */
+.search-text-overlay {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  padding: 10px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  font-size: 18px;
+  border-radius: 6px;
+  display: none; /* Initially hidden */
+  z-index: 1000;
+}
+
+/* Ensure the hero image container is properly aligned */
+.hero-image-container {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.hero-image-container img {
+  max-width: 100px;
+  border-radius: 5px;
+  border: 2px solid #333;
 }
