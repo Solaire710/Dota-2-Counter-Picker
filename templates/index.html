@@ -78,6 +78,9 @@
           selectedHeroes[emptySlotIndex] = heroName;
           document.getElementById(`hero_${emptySlotIndex + 1}`).value = heroName;
           updateHeroImages();
+          
+          // 👇 Add this line here to instantly clear the search string and overlay
+          clearSearchText(); 
         }
       }
 
@@ -167,7 +170,14 @@
         <h2>Best Counters Against: {{ ", ".join(selected_heroes) }}</h2>
         <ul>
           {% for hero, score in matchups %}
-          <li>{{ hero }} — Advantage Score: {{ "%+.2f"|format(-score) }}</li>
+          <li>
+            {{ hero }} — Advantage Score: 
+            {% if -score >= 0 %}
+              <span class="positive-advantage">{{ "%+.2f"|format(-score) }}%</span>
+            {% else %}
+              <span class="negative-advantage">{{ "%+.2f"|format(-score) }}%</span>
+            {% endif %}
+          </li>
           {% endfor %}
         </ul>
       </div>
