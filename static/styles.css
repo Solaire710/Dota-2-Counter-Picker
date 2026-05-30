@@ -195,3 +195,13 @@ p[style*="color:red"] {
   border-radius: 5px;
   border: 2px solid #333;
 }
+
+.positive-advantage {
+  color: #81c784;
+  font-weight: bold;
+}
+
+.negative-advantage {
+  color: #e57373;
+  font-weight: bold;
+}
